@@ -1,10 +1,14 @@
 package com.king.plugincore;
 
 import com.king.Zhu;
+import com.king.mysql.MysqlManager;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
 
 import static java.util.Map.Entry.comparingByValue;
 import static java.util.stream.Collectors.toMap;
@@ -39,12 +43,28 @@ public class PlayerManualQuantity {
         //创建 file的操作类
         fileConfiguration = YamlConfiguration.loadConfiguration(file);
 
+
+       //先从数据库同步数据
+        MysqlManager.get().forEach(map -> {
+            fileConfiguration.set((String) map.get("player_id"),map.get("finished_times"));
+        });
+        try {
+            fileConfiguration.save(file);
+        } catch (IOException e) {
+            Bukkit.getLogger().log(Level.WARNING,"保存玩家数据时出现了异常!");
+        }
+
+
         //循环读取
         for (String key : fileConfiguration.getKeys(false)) {
 
             playerdata.put(key,fileConfiguration.getInt(key));
 
         }
+
+
+
+
         //非0 排序
         if(playerdata.size() != 0) {
             px();
@@ -116,7 +136,8 @@ public class PlayerManualQuantity {
             inputplayerdata();
 
         }
-
+        //保存到数据库
+        MysqlManager.save(s,playerdata.get(s));
     }
 
         //排序

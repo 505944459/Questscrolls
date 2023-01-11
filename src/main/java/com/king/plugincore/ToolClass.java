@@ -13,7 +13,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.lang.reflect.Method;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Objects;
 
 public class ToolClass {
 
@@ -93,11 +95,11 @@ public class ToolClass {
 
         if(isb(12)){
 
-            String a = block.getState().getBlockData().toString();
+            /*String a = block.getState().getBlockData().toString();
             int A = a.indexOf(":");
             A++;
             int B = a.indexOf("}");
-            return a.substring(A,B);
+            return a.substring(A,B)*/;
 
         }else{
 
@@ -116,6 +118,7 @@ public class ToolClass {
         }
 
 
+        return null;
     }
 
     public static boolean isb(int bb){
@@ -185,9 +188,9 @@ public class ToolClass {
                 ,""
         ));
 
-        if(ToolClass.isb(13)) { //假如版本大于 13 则
+        /*if(ToolClass.isb(13)) { //假如版本大于 13 则
             ls_meta.setCustomModelData(10003);
-        }
+        }*/
 
         ls_item.setItemMeta(ls_meta);
 

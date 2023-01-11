@@ -16,7 +16,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.*;
 import java.util.HashMap;
@@ -48,8 +47,8 @@ public class Zhu extends JavaPlugin {
 
         getLogger().info("插件加载中..." + Banben);
 
-        getLogger().info("版本: 5.0 作者: BIDE");
-        getLogger().info("最终版 此插件已放弃维护");
+        getLogger().info("版本: 5.1[非正式] 作者: BIDE 更新: RiceTofu");
+        getLogger().info("增强版，添加了mysql支持");
 
         getLogger().info("正在创建各种文件...");
 
@@ -94,6 +93,10 @@ public class Zhu extends JavaPlugin {
 
             }
 
+        getLogger().info("读取配置文件中");
+
+        new ReadConfig(getConfig());
+
 
         getLogger().info("加载玩家数据文件中...");
         PlayerManualQuantity.reloadPlayerManualQuantity(); //读取玩家数据文件
@@ -113,11 +116,6 @@ public class Zhu extends JavaPlugin {
         getLogger().info("注册指令中");
 
             Objects.requireNonNull(this.getCommand("questscrolls")).setExecutor(new QuestscrollsCommandExecutor()); //注册指令
-
-
-        getLogger().info("读取配置文件中");
-
-            new ReadConfig(getConfig());
 
             ReadConfig.reloadopen_gui_cooling();
 

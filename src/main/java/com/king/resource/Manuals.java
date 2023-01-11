@@ -211,9 +211,9 @@ public class Manuals {
 
         itemMeta.setLore(lore);
 
-        if(ToolClass.isb(13)) { //假如版本大于 13 则
+        /*if(ToolClass.isb(13)) { //假如版本大于 13 则
             itemMeta.setCustomModelData(CustomModelData);
-        }
+        }*/
 
         itemStack.setItemMeta(itemMeta);
 
@@ -235,9 +235,9 @@ public class Manuals {
         itemMeta.setDisplayName(JName);
         itemMeta.setLore(Jlore);
 
-        if(ToolClass.isb(13)) { //假如版本大于 13 则
+        /*if(ToolClass.isb(13)) { //假如版本大于 13 则
             itemMeta.setCustomModelData(KitCustomModelData);
-        }
+        }*/
 
         itemStack.setItemMeta(itemMeta);
         return itemStack;

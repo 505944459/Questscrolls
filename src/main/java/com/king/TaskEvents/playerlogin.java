@@ -1,5 +1,6 @@
 package com.king.TaskEvents;
 
+import com.king.mysql.MysqlManager;
 import com.king.plugincore.giveTask;
 import com.king.resource.ReadConfig;
 import com.king.resource.ReadTime;
@@ -15,6 +16,12 @@ public class playerlogin implements Listener {
     @EventHandler
     public void denglu(PlayerJoinEvent event){
 
+        // 数据库判断玩家有没有领取过任务卷轴
+        if(MysqlManager.isReceiveToday(event.getPlayer().getName()))return;
+        else {
+            MysqlManager.receive(event.getPlayer().getName());
+        }
+
         if(ReadConfig.task.equalsIgnoreCase("-")){
             return;
         }
@@ -26,6 +33,7 @@ public class playerlogin implements Listener {
         if(ReadTime.cha(event.getPlayer().getName())){
             giveTask.give(event.getPlayer().getName(),ReadConfig.task,event.getPlayer());
         }
+
 
     }
 

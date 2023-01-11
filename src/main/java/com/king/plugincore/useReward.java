@@ -2,10 +2,8 @@ package com.king.plugincore;
 
 import com.king.Zhu;
 import com.king.command.QuestscrollsCommandExecutor;
-import com.king.resource.ReadConfig;
 import com.king.resource.ReadLanguage;
 import com.king.resource.ReadManual;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;

@@ -25,7 +25,6 @@ import com.king.Zhu;
 import com.king.resource.ReadConfig;
 import com.king.resource.ReadLanguage;
 import com.king.resource.ReadManual;
-import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -214,6 +213,8 @@ public class MainBusiness {
 
                                 player.sendMessage(ReadLanguage.Finish_All_Task);//发送消息
                                 PlayerManualQuantity.addplayerquantity(player.getName()); //将玩家的值 (完成的任务卷轴总数) 自增
+
+
 
                                 if (ReadConfig.sound_effect) { //是否播放音效
 

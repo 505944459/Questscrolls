@@ -27,6 +27,14 @@ public class ReadConfig {
 
     public static String Gui_Title;
 
+    public static String Host;
+
+    public static String Name;
+
+    public static String Username;
+
+    public static String Password;
+
     public static boolean open_gui_cooling;
 
     public static String task;
@@ -50,6 +58,11 @@ public class ReadConfig {
         task = fileConfiguration.getString("player_login_givetask");
 
         Gui_Title = fileConfiguration.getString("Gui_Title").replace("&","§");
+
+        Host = fileConfiguration.getString("host");
+        Name = fileConfiguration.getString("name");
+        Username = fileConfiguration.getString("username");
+        Password = fileConfiguration.getString("password");
 
         commands.clear(); //先清空集合 避免万一是reload congfig
 
