@@ -2,6 +2,7 @@ package com.king;
 
 import com.king.TaskEvents.*;
 import com.king.command.QuestscrollsCommandExecutor;
+import com.king.mysql.MysqlManager;
 import com.king.plugincore.Gui.closeGui;
 import com.king.plugincore.Gui.operateGui;
 import com.king.plugincore.PlayerManualQuantity;
@@ -16,10 +17,15 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.logging.Level;
 
 /*
 * 转区只需要修改
@@ -159,6 +165,39 @@ public class Zhu extends JavaPlugin {
             getLogger().info("[非必要] 未安装前置 PlaceholderAPI");
             getLogger().info("无法使用变量功能");
         }
+
+        //防止连接断掉
+        (new BukkitRunnable() {
+            @Override
+            public void run() {
+                Connection connection = MysqlManager.getConnection();
+                try {
+                    if (connection != null && !connection.isClosed()) {
+                        connection.createStatement().execute("SELECT 1");
+                    }
+                } catch (SQLException e) {
+                    // 驱动加载
+                    try{
+                        Class.forName("com.mysql.jdbc.Driver");
+                    }catch (Exception a){
+                        Bukkit.getLogger().log(Level.WARNING,"加载mysql驱动时出现了一个错误!!");
+                    }
+                    // 获取mysql连接
+                    String url = "jdbc:mysql://"+ReadConfig.Host+"/"+ReadConfig.Name+"?useSSL=false";
+                    String username = ReadConfig.Username;
+                    String password = ReadConfig.Password;
+
+                    Bukkit.getLogger().log(Level.INFO, username,password);
+
+                    try {
+                        connection = DriverManager.getConnection(url,username,password);
+                    }catch (Exception b){
+                        b.printStackTrace();
+                        Bukkit.getLogger().log(Level.WARNING,"获取SQL连接时出现异常，请检查sql配置!!");
+                    }
+                }
+            }
+        }).runTaskTimerAsynchronously(this, 60 * 20, 60 * 20);
 
     }
 

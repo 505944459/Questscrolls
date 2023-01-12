@@ -25,12 +25,12 @@ public class MysqlManager {
     static {
         // 驱动加载
         try{
-            Class.forName("com.mysql.cj.jdbc.Driver");
+            Class.forName("com.mysql.jdbc.Driver");
         }catch (Exception e){
             Bukkit.getLogger().log(Level.WARNING,"加载mysql驱动时出现了一个错误!!");
         }
         // 获取mysql连接
-        String url = "jdbc:mysql://"+ReadConfig.Host+"/"+ReadConfig.Name+"?useSSL=true&useUnicode=true&characterEncoding=UTF-8";
+        String url = "jdbc:mysql://"+ReadConfig.Host+"/"+ReadConfig.Name+"?useSSL=false";
         String username = ReadConfig.Username;
         String password = ReadConfig.Password;
 
