@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.*;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @Author: RiceTofu
@@ -17,6 +18,8 @@ import java.util.logging.Level;
 public class MysqlManager {
 
     private static Connection connection = null;
+
+    private static Logger log = Bukkit.getLogger();
 
     public static Connection getConnection() {
         return connection;
@@ -34,7 +37,19 @@ public class MysqlManager {
         String username = ReadConfig.Username;
         String password = ReadConfig.Password;
 
-        Bukkit.getLogger().log(Level.INFO, username,password);
+        //新建一个表如果没有这个表的话
+        String sql = "CREATE TABLE if not exists `playerdata`  (\n" +
+                "  `player_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '玩家的id',\n" +
+                "  `finished_times` int(5) NOT NULL COMMENT '完成任务的次数',\n" +
+                "  `last_receive_time` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '上次收到任务的时间(非完成时间)',\n" +
+                "  PRIMARY KEY (`player_id`) USING BTREE\n" +
+                ") ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;\n";
+
+        try {
+            connection.createStatement().execute(sql);
+        } catch (SQLException e) {
+            log.log(Level.SEVERE,"新建数据库表时出现了一个错误!!");
+        }
 
         try {
             connection = DriverManager.getConnection(url,username,password);
@@ -51,71 +66,61 @@ public class MysqlManager {
      * @param times 完成次数
      * */
     public static boolean save(String player_id,Integer times){
-        Statement statement = null;
+        String sql = "UPDATE playerdata set finished_times = ? where player_id = ?";
+        PreparedStatement statement = null;
         try {
-            statement = connection.createStatement();
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1,times);
+            statement.setString(2,player_id);
+            statement.execute();
         } catch (SQLException e) {
-            Bukkit.getLogger().log(Level.WARNING,"获取sql执行对象时出现了错误");
+            log.log(Level.SEVERE,"执行sql语句时出现了一个错误!");
             return false;
-        }
-        //先查询一次判断数据库中有无这个玩家的数据
-        String sql = "SELECT * FROM playerdata where player_id = '" +player_id+"'";
-        try {
-            ResultSet resultSet = statement.executeQuery(sql);
-            if(!resultSet.next()){
-                //插入 一个用户
-                sql = "INSERT INTO playerdata(player_id,finished_times,last_receive_time) values ('"+player_id+"',"+times+",'"+new SimpleDateFormat("yyyy-MM-dd").format(new Date())+"')";
-                statement.execute(sql);
-            }else {
-                //更新 一个用户
-                sql = "UPDATE playerdata set finished_times = " +times +",last_receive_time = '"+new SimpleDateFormat("yyyy-MM-dd").format(new Date())+"' where player_id = '"+player_id+"'";
-                statement.execute(sql);
-            }
-        } catch (SQLException e) {
-            Bukkit.getLogger().log(Level.WARNING,"执行sql查询语句出现错误");
-            return false;
-        } finally {
+        }finally {
             try {
                 statement.close();
             } catch (SQLException e) {
-                Bukkit.getLogger().log(Level.WARNING,"关闭statement对象时出现了错误!");
+                log.log(Level.SEVERE,"关闭statement对象时出现了一个错误!");
             }
         }
+
         return true;
     }
 
     /**
      * 判断指定玩家是否今日已经收到任务
      * @param player_id 玩家id
-     * @return 是否收到过仍无
+     * @return 是否收到过任务
      * */
     public static boolean isReceiveToday(String player_id){
 
-        String sql = "SELECT * FROM playerdata where player_id = '"+player_id+"' and last_receive_time = '"+new SimpleDateFormat("yyyy-MM-dd").format(new Date())+"'";
-
-        Statement statement = null;
+        String sql = "SELECT * FROM playerdata where player_id = ? and last_receive_time = ?";
+        PreparedStatement statement = null;
         try {
-            statement = connection.createStatement();
-            if (statement.executeQuery(sql).next()) {
+            statement = connection.prepareStatement(sql);
+            statement.setString(1,player_id);
+            statement.setString(2,new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+            if (statement.executeQuery().next()) {
                 return true;
             }else return false;
-        }catch (Exception e){
-            Bukkit.getLogger().log(Level.WARNING,"执行sql查询语句出现错误");
+        }catch (SQLException e){
+            log.log(Level.SEVERE,"执行sql语句时出现了一个错误!");
             return true;
         }finally {
             try {
                 statement.close();
             } catch (SQLException e) {
-                Bukkit.getLogger().log(Level.WARNING,"关闭statement对象时出现了错误!");
+                log.log(Level.SEVERE,"关闭statement对象时出现了一个错误!");
             }
         }
     }
 
     /**
-     * 玩家收到任务事件调用
+     * 玩家收到任务事件调用,如果没有用户则会在数据库表中新建一个
+     * @param player_id 玩家的id
      * */
     public static void receive(String player_id){
-        Statement statement = null;
+        /*Statement statement = null;
         try {
             statement = connection.createStatement();
         } catch (SQLException e) {
@@ -142,13 +147,42 @@ public class MysqlManager {
             } catch (SQLException e) {
                 Bukkit.getLogger().log(Level.WARNING,"关闭statement对象时出现了错误!");
             }
-        }
+        }*/
+        PreparedStatement statement = null;
+        try {
+            statement = connection.prepareStatement("SELECT * FROM playerdata where player_id = ?");
+            statement.setString(1,player_id);
+            if (!statement.executeQuery().next()) {
+                //插入一个新的玩家用户
+                statement = connection.prepareStatement("INSERT INTO playerdata(player_id, finished_times, last_receive_time) VALUES (?,?,?)");
+                statement.setString(1,player_id);
+                statement.setInt(2,0);
+                statement.setString(3,new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+                statement.execute();
+            }else {
+                //更新收到任务的时间
+                statement = connection.prepareStatement("UPDATE playerdata set last_receive_time = ? where player_id = ?");
+                statement.setString(1,new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+                statement.setString(2,player_id);
+                statement.execute();
+            }
 
+
+        }catch (SQLException e){
+            log.log(Level.SEVERE,"执行sql语句时出现了一个错误!");
+        }finally {
+            try {
+                statement.close();
+            } catch (SQLException e) {
+                log.log(Level.SEVERE,"关闭statement对象时出现了一个错误!");
+            }
+        }
     }
 
 
     /**
      * 玩家数据读取
+     * @return 玩家数据的哈希表表示
      * */
     public static List<Map> get(){
         String sql = "SELECT * FROM playerdata";
@@ -168,10 +202,8 @@ public class MysqlManager {
 
                 result.add(map);
             }
-
-
         } catch (SQLException e) {
-
+            log.log(Level.SEVERE,"执行sql语句时出现了一个错误!");
         }finally {
             try {
                 statement.close();
@@ -179,7 +211,6 @@ public class MysqlManager {
                 Bukkit.getLogger().log(Level.WARNING,"关闭statement对象时出现了错误!");
             }
         }
-
         return result;
     }
 
